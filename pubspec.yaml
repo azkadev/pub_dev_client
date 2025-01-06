@@ -1,6 +1,6 @@
 name: 'pub_dev_client'
 description: 'A Pub Client For Interact with pub.dev api easly'
-version: '0.0.4'
+version: '0.0.5'
 homepage: 'https://youtube.com/@azkadev'
 repository: 'https://github.com/azkadev/pub_dev_client'
 issue_tracker: 'https://t.me/DEVELOPER_GLOBAL_PUBLIC'
@@ -11,10 +11,10 @@ funding:
 environment:
   sdk: '>=3.6.0 <4.0.0'
 dependencies:
-  general_lib: '^0.0.55'
+  general_lib: '^0.0.56'
   http: '^1.2.2'
-  io_universe: '^0.0.3'
-  oauth2: ^2.0.3
+  io_universe: '^0.0.4'
+  oauth2: '^2.0.3'
 dev_dependencies:
   lints: '^5.0.0'
   test: 'any'
