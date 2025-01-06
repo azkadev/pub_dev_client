@@ -1,6 +1,13 @@
 name: 'pub_dev_client'
 description: 'A Pub Client For Interact with pub.dev api easly'
-version: '0.0.3'
+version: '0.0.4'
+homepage: 'https://youtube.com/@azkadev'
+repository: 'https://github.com/azkadev/pub_dev_client'
+issue_tracker: 'https://t.me/DEVELOPER_GLOBAL_PUBLIC'
+documentation: 'https://youtube.com/@azkadev'
+funding:
+  - 'https://github.com/sponsors/azkadev'
+  - 'https://github.com/sponsors/generalfoss'
 environment:
   sdk: '>=3.6.0 <4.0.0'
 dependencies:
@@ -14,10 +21,3 @@ dev_dependencies:
 dependency_overrides:
   pointycastle: '3.8.0'
   mime: '^2.0.0'
-funding:
-  - 'https://github.com/sponsors/azkadev'
-  - 'https://github.com/sponsors/generalfoss'
-homepage: 'https://youtube.com/@azkadev'
-repository: 'https://github.com/azkadev/general_framework'
-issue_tracker: 'https://t.me/DEVELOPER_GLOBAL_PUBLIC'
-documentation: 'https://youtube.com/@azkadev'
