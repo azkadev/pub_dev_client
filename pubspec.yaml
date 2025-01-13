@@ -11,7 +11,7 @@ funding:
 environment:
   sdk: '>=3.6.0 <4.0.0'
 dependencies:
-  general_lib: '^0.0.56'
+  general_lib: '^0.0.59'
   http: '^1.2.2'
   io_universe: '^0.0.4'
   oauth2: '^2.0.3'
