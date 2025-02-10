@@ -4,8 +4,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:io_universe/io_universe.dart';
 import 'package:pub_dev_client/scheme/respond_scheme/pub_dev_package_score.dart';
 import 'package:pub_dev_client/scheme/respond_scheme/respond_scheme.dart';
+import "dart:math" as math;
 
 class PubDevClientInvokeParameters {
   final Map parameters;
@@ -24,13 +26,7 @@ class PubDevClientInvokeParameters {
   })  : userAgent = userAgent ?? "default",
         durationTimeOut = durationTimeOut ?? Duration(seconds: 30);
 
-  PubDevClientInvokeParameters copyWith(
-      {Map<dynamic, dynamic>? parameters,
-      String? urlPathScheme,
-      Map<String, dynamic>? urlQueryParameters,
-      String? userAgent,
-      bool? isThrowOnError,
-      Duration? durationTimeOut}) {
+  PubDevClientInvokeParameters copyWith({Map<dynamic, dynamic>? parameters, String? urlPathScheme, Map<String, dynamic>? urlQueryParameters, String? userAgent, bool? isThrowOnError, Duration? durationTimeOut}) {
     return PubDevClientInvokeParameters(
       parameters: parameters ?? this.parameters,
       urlPathScheme: urlPathScheme ?? this.urlPathScheme,
@@ -44,25 +40,53 @@ class PubDevClientInvokeParameters {
 
 class PubDevClient {
   final http.Client httpClient;
-  PubDevClient({http.Client? httpClient})
-      : httpClient = httpClient ?? http.Client();
+  PubDevClient({http.Client? httpClient}) : httpClient = httpClient ?? http.Client();
 
   static String packageVersion = "0.0.0";
-  static RegExp regExpMethod =
-      RegExp("^((get|post|patch|delete|head)([ ])+)", caseSensitive: false);
+  static RegExp regExpMethod = RegExp("^((get|post|patch|delete|head)([ ])+)", caseSensitive: false);
+
+  String createUuid([List<int>? bytes]) {
+    final rnd = math.Random.secure();
+
+    // See http://www.cryptosys.net/pki/uuid-rfc4122.html for notes
+    bytes ??= List<int>.generate(16, (_) => rnd.nextInt(256));
+    bytes[6] = (bytes[6] & 0x0F) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+    final chars = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join().toUpperCase();
+
+    return ''
+        '${chars.substring(0, 8)}-'
+        '${chars.substring(8, 12)}-'
+        '${chars.substring(12, 16)}-'
+        '${chars.substring(16, 20)}-'
+        '${chars.substring(20, 32)}';
+  }
 
   Future<Map> invokeRaw({
     required PubDevClientInvokeParameters invokeParameters,
   }) async {
     final Map<String, String> headersOptions = {
-      "user-agent":
-          "pub_dev_client/${PubDevClient} ${invokeParameters.userAgent}",
+      'Accept': 'application/vnd.pub.v2+json',
+      "user-agent": "pub_dev_client/${PubDevClient} ${invokeParameters.userAgent}",
     };
-    final String method =
-        (regExpMethod.stringMatch(invokeParameters.urlPathScheme) ?? "get")
-            .trim();
-    final String urlPath =
-        invokeParameters.urlPathScheme.replaceAll(regExpMethod, "").trim();
+    {
+      headersOptions['X-Pub-OS'] = Platform.operatingSystem;
+      headersOptions['X-Pub-Command'] = "command";
+      headersOptions['X-Pub-Session-ID'] = createUuid();
+
+      final environment = Platform.environment['PUB_ENVIRONMENT'];
+      if (environment != null) {
+        headersOptions['X-Pub-Environment'] = environment;
+      }
+
+      final type = Zone.current[#_dependencyType];
+      if (type != null && type != "none") {
+        headersOptions['X-Pub-Reason'] = type.toString();
+      }
+    }
+    final String method = (regExpMethod.stringMatch(invokeParameters.urlPathScheme) ?? "get").trim();
+    final String urlPath = invokeParameters.urlPathScheme.replaceAll(regExpMethod, "").trim();
     final Uri url = Uri.parse("https://pub.dev/api").replace(
       path: urlPath,
       queryParameters: invokeParameters.urlQueryParameters,
@@ -132,8 +156,7 @@ class PubDevClient {
       ),
       onResult: (defaultTesult) {
         if (defaultTesult["@type"] == "ok") {
-          defaultTesult["@type"] =
-              PubDevPackageDocumentation.defaultData["@type"];
+          defaultTesult["@type"] = PubDevPackageDocumentation.defaultData["@type"];
         }
         return PubDevPackageDocumentation(defaultTesult);
       },
@@ -270,8 +293,7 @@ class PubDevClient {
   }) async {
     return await invoke<PubDevPackageVersionInfo>(
       invokeParameters: PubDevClientInvokeParameters(
-        urlPathScheme:
-            "get /api/packages/${packageName}/versions/${packageVersion}",
+        urlPathScheme: "get /api/packages/${packageName}/versions/${packageVersion}",
         parameters: {},
         urlQueryParameters: null,
         isThrowOnError: false,
@@ -280,8 +302,7 @@ class PubDevClient {
       ),
       onResult: (defaultTesult) {
         if (defaultTesult["@type"] == "ok") {
-          defaultTesult["@type"] =
-              PubDevPackageVersionInfo.defaultData["@type"];
+          defaultTesult["@type"] = PubDevPackageVersionInfo.defaultData["@type"];
         }
         return PubDevPackageVersionInfo(defaultTesult);
       },
